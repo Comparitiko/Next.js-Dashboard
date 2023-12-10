@@ -1,6 +1,8 @@
 'use server'
 
 import { sql } from '@vercel/postgres';
+import { AuthError } from 'next-auth';
+import { signIn } from 'next-auth/react';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
@@ -110,4 +112,18 @@ export async function deleteInvoice(id: string) {
   } catch (error) {
     console.log('Database deleting error')
   }
+}
+
+export async function authenticate(
+	prevState: string | undefined,
+	formData: FormData,
+) {
+	try {
+		await signIn('credentials', Object.fromEntries(formData));
+	} catch (error) {
+		if ((error as Error).message.includes('CredentialsSignin')) {
+			return 'CredentialsSignin';
+		}
+		throw error;
+	}
 }
